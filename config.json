@@ -1,0 +1,17 @@
+{
+  "topics": ["saude", "educacao"],
+  "targets": [
+    {
+      "token": "c0040d80-4677-4341-b108-94d31d161eeb",
+      "platform": "android"
+    },
+    {
+      "token": "1995b188-b424-4850-89ee-821da1d2974e",
+      "platform": "android"
+    },
+    {
+      "token": "18a38076-40b0-48bd-8272-011e7db81ade",
+      "platform": "ios"
+    }
+  ]
+}
