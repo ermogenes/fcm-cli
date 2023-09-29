@@ -4,7 +4,7 @@ import checkbox from "@inquirer/checkbox";
 import clear from "clear";
 import chalk from "chalk";
 import fs from "fs";
-import { loremIpsum, LoremIpsum } from "lorem-ipsum";
+import { loremIpsum } from "lorem-ipsum";
 import colorizeJson from "json-colorizer";
 import clipboard from "clipboardy";
 import boxen from "boxen";
