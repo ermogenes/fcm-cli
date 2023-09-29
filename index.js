@@ -90,12 +90,6 @@ console.log(
   })
 );
 
-// console.log("Firebase Payload (getMessage.Send):"));
-// console.log("\n");
-
-// console.log(colorizeJson(jsonMessage));
-// console.log("\n");
-
 clipboard.writeSync(jsonMessage);
 
 console.log(chalk.bgGreen("JSON copied to clipboard."));
