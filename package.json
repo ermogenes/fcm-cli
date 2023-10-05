@@ -25,6 +25,7 @@
     "cli-table": "^0.3.11",
     "clipboardy": "^3.0.0",
     "clui": "^0.3.6",
+    "firebase-admin": "^11.11.0",
     "json-colorizer": "^2.2.2",
     "lorem-ipsum": "^2.0.8"
   }

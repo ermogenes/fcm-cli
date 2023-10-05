@@ -1,6 +1,12 @@
+import { initializeApp, cert } from "firebase-admin/app";
+import { getMessaging } from "firebase-admin/messaging";
+
+import serviceAccount from "./secrets/serviceAccountKey.json" assert { type: "json" };
+
 import input from "@inquirer/input";
 import select from "@inquirer/select";
 import checkbox from "@inquirer/checkbox";
+import confirm from "@inquirer/confirm";
 import clear from "clear";
 import chalk from "chalk";
 import fs from "fs";
@@ -39,11 +45,15 @@ if (messageType == "topic") {
     choices: config.topics.map((topic) => ({ name: topic, value: topic })),
   });
 
-  message.topic = topics.length === 1 ? topics[0] : undefined;
-  message.conditions =
-    topics.length > 1
-      ? topics.join(" in topics || ").concat(" in topics")
-      : undefined;
+  if (topics.length === 1) {
+    message.topic = topics[0];
+  } else if (topics.length > 1) {
+    message.condition = topics
+      .map((topic) => `\'${topic}\'`)
+      .join(" in topics || ")
+      .concat(" in topics");
+  }
+
   console.log(chalk.redBright(topics.join(", ")));
 }
 
@@ -56,8 +66,11 @@ if (messageType == "target") {
     })),
   });
 
-  message.token = targets.length === 1 ? targets[0] : undefined;
-  message.tokens = targets.length > 1 ? targets : undefined;
+  if (targets.length === 1) {
+    message.token = targets[0];
+  } else if (targets.length > 1) {
+    message.tokens = targets;
+  }
 
   console.log(chalk.redBright(targets.join(", ")));
 }
@@ -84,7 +97,7 @@ const jsonMessage = JSON.stringify(message, null, 4);
 
 console.log(
   boxen(colorizeJson(jsonMessage, { pretty: true }), {
-    title: chalk.bgGreen("Firebase Payload (getMessage.Send):"),
+    title: chalk.bgGreen(`Firebase Payload:`),
     titleAlignment: "center",
     padding: 1,
   })
@@ -93,3 +106,42 @@ console.log(
 clipboard.writeSync(jsonMessage);
 
 console.log(chalk.bgGreen("JSON copied to clipboard."));
+
+console.log();
+const sendIt = await confirm({ message: "Send it?" });
+
+if (sendIt) {
+  initializeApp({
+    credential: cert(serviceAccount),
+  });
+
+  if (message.tokens) {
+    // multicast
+    getMessaging()
+      .sendEachForMulticast(message)
+      .then((response) => {
+        if (response.failureCount > 0) {
+          console.log("Error sending message:", response);
+          const failedTokens = [];
+          response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+              failedTokens.push(message.tokens[idx]);
+            }
+          });
+          console.log("List of tokens that caused failures: " + failedTokens);
+        } else {
+          console.log("Successfully sent message:", response);
+        }
+      });
+  } else {
+    // single cast
+    getMessaging()
+      .send(message)
+      .then((response) => {
+        console.log("Successfully sent message:", response);
+      })
+      .catch((error) => {
+        console.log("Error sending message:", error);
+      });
+  }
+}
